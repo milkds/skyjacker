@@ -1,0 +1,198 @@
+package skyjacker;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import skyjacker.entities.*;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+public class ShockBuilder {
+    private static final Logger logger = LogManager.getLogger(ShockBuilder.class.getName());
+
+    public SkyShock buildShock(WebDriver driver, String link) {
+        SkyShock shock = new SkyShock();
+        shock.setWebLink(link);
+        try {
+            SileniumUtil.openLink(driver, link);
+        }
+        catch (TimeoutException e){
+            logger.error("Couldn't get shock page " + link);
+            return shock;
+        }
+        setShockInfo(shock, driver);
+        logger.info("Built shock: " + shock);
+        return shock;
+    }
+
+    private void setShockInfo(SkyShock shock, WebDriver driver) {
+        String title = getTitle(driver);
+        String sku = getSKU(driver);
+        String desc = getDescription(driver);
+        String imgLink = getImgLink(driver);
+        Set<Category> categories = getCategories(driver);
+        Set<SpecAndKitNote> notes = getSpecAndKitNotes(driver);
+        Set<Fitment> fitments = getFitments(driver);
+
+        shock.setTitle(title);
+        shock.setSku(sku);
+        shock.setDesc(desc);
+        shock.setImgLinks(imgLink);
+        shock.setCategories(categories);
+        shock.setFitments(fitments);
+        shock.setNotes(notes);
+    }
+
+    private Set<Fitment> getFitments(WebDriver driver) {
+        Set<Fitment> fitments = new HashSet<>();
+        WebElement fitTab = SileniumUtil.getElementBy(driver, By.id("tab-title-gamma_ymm_tab"));
+        if (fitTab==null){
+            logger.error("No fitment tab at " + driver.getCurrentUrl());
+            return fitments;
+        }
+        fitTab.click();
+        SileniumUtil.getElementBy(driver, By.className("gamma_ymm_term_info"));//to wait for tab to open
+        List<WebElement> fitElements = driver.findElements(By.className("gamma_ymm_term_info"));
+        if (fitElements.size()==0){
+            logger.error("No info in fitment tab for: " + driver.getCurrentUrl());
+            return fitments;
+        }
+        fitElements.forEach(fitEl->{
+            Fitment fitment = new Fitment();
+            WebElement fitStringEl = SileniumUtil.getElementFromElementBy(fitEl, By.tagName("h4"));
+            if (fitStringEl==null){
+                fitment.setFitString("NO FITMENT STRING");
+            }
+            else {
+                fitment.setFitString(fitStringEl.getText());
+                logger.debug("FIT STRING: " + fitment.getFitString());
+            }
+            Set<FitmentNote> fitNotes = fitment.getFitNotes();
+            List<WebElement> notesEls = fitEl.findElements(By.tagName("li"));
+            logger.debug("FITMENT NOTES: ");
+            notesEls.forEach(notesEl->{
+                String fitNote = notesEl.getText();
+                FitmentNote note = new FitmentNote();
+                note.setFitNote(fitNote);
+                fitNotes.add(note);
+                logger.debug(note);
+            });
+            fitments.add(fitment);
+        });
+
+        return fitments;
+    }
+
+    private Set<SpecAndKitNote> getSpecAndKitNotes(WebDriver driver) {
+        Set<SpecAndKitNote> notes = new HashSet<>();
+        WebElement notesTab = SileniumUtil.getElementBy(driver, By.id("tab-title-additional_information"));
+        if (notesTab == null){
+            logger.error("No Spec and Kit Notes tab for " + driver.getCurrentUrl());
+            return notes;
+        }
+        notesTab.click();
+        WebElement notesGroup = SileniumUtil.getElementBy(driver, By.className("shop_attributes"));
+        if (notesGroup==null){
+            logger.error("No data in Spec and Kit Notes tab for " + driver.getCurrentUrl());
+            return notes;
+        }
+        List<WebElement> tableRowEls = notesGroup.findElements(By.tagName("tr"));
+        logger.debug("NOTES: ");
+        tableRowEls.forEach(tableRowEl->{
+            String name = tableRowEl.findElement(By.tagName("th")).getText();
+            String value = tableRowEl.findElement(By.tagName("td")).getText();
+            SpecAndKitNote note = new SpecAndKitNote();
+            note.setName(name);
+            note.setValue(value);
+            notes.add(note);
+            logger.debug(note);
+        });
+
+        return notes;
+    }
+
+    private String getImgLink(WebDriver driver) {
+        String imgLink = "NO IMG LINK";
+        WebElement imgElGroup = SileniumUtil.getElementBy(driver, By.className("woocommerce-product-gallery__image"));
+        if (imgElGroup==null){
+            return imgLink;
+        }
+        List<WebElement> imgEls = imgElGroup.findElements(By.tagName("img"));
+        if (imgEls.size()==0){
+            return imgLink;
+        }
+        StringBuilder imgLinkBuilder = new StringBuilder();
+        imgEls.forEach(imgEL->{
+            imgLinkBuilder.append(imgEL.getAttribute("src"));
+            imgLinkBuilder.append(System.lineSeparator());
+        });
+        int length = imgLinkBuilder.length();
+        if (length>0){
+            imgLinkBuilder.setLength(length-2);
+            logger.debug("IMG LINKS: " + imgLinkBuilder.toString());
+            return imgLinkBuilder.toString();
+        }
+        else {
+            return imgLink;
+        }
+    }
+
+    private String getDescription(WebDriver driver) {
+        WebElement descEl = SileniumUtil.getElementBy(driver, By.id("tab-description"));
+        if (descEl==null){
+            return "NO DESCRIPTION";
+        }
+        String desc = descEl.getText();
+        desc = desc.replace("Description", "");
+        if (desc.length()>2){
+            desc = desc.substring(1);
+        }
+        else {
+            desc = "NO DESCRIPTION";
+        }
+        logger.debug("DESCRIPTION: " + desc);
+
+        return desc;
+    }
+
+    private Set<Category> getCategories(WebDriver driver) {
+        Set<Category> categories = new HashSet<>();
+        WebElement catElGroup = SileniumUtil.getElementBy(driver, By.className("posted_in"));
+        List<WebElement> catEls = catElGroup.findElements(By.tagName("a"));
+        catEls.forEach(catEl-> {
+            Category category = new Category();
+            category.setName(catEl.getText());
+            categories.add(category);
+        });
+        logger.debug("Categories: ");
+        categories.forEach(logger::debug);
+
+        return categories;
+    }
+
+    private String getSKU(WebDriver driver) {
+        WebElement skuEl = SileniumUtil.getElementBy(driver, By.className("sku"));
+        if (skuEl==null){
+            return "NO SKU";
+        }
+        logger.debug("SKU: " + skuEl.getText());
+
+        return skuEl.getText();
+    }
+
+    private String getTitle(WebDriver driver) {
+        WebElement titleEl = SileniumUtil.getElementBy(driver, By.cssSelector("h1[class='product_title entry-title']"));
+        if (titleEl==null){
+            return "NO TITLE";
+        }
+        logger.debug("Title: " + titleEl.getText());
+
+        return titleEl.getText();
+    }
+
+}
