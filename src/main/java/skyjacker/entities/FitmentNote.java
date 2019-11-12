@@ -37,4 +37,12 @@ public class FitmentNote {
     public void setFitments(Set<Fitment> fitments) {
         this.fitments = fitments;
     }
+
+    @Override
+    public String toString() {
+        return "FitmentNote{" +
+                "fitNote='" + fitNote + '\'' +
+                ", fitments=" + fitments +
+                '}';
+    }
 }

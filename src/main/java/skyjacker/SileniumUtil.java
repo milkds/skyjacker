@@ -38,7 +38,22 @@ public class SileniumUtil {
                         ExpectedConditions.stalenessOf(body),
                         ExpectedConditions.presenceOfElementLocated(By.id("main-header"))
                 ));
+        if  (noShockFound(driver)){
+            throw  new TimeoutException();
+        }
         logger.debug("successfully opened " + link);
+    }
+
+    private static boolean noShockFound(WebDriver driver) {
+        WebElement checkEl = null;
+        try {
+            checkEl = driver.findElement(By.id("left-area"));
+        }
+        catch (NoSuchElementException e){
+            return false;
+        }
+        return checkEl.getText().contains("No Results Found");
+
     }
 
     public static WebElement getElementBy(WebDriver driver, By by) {
