@@ -8,7 +8,8 @@ import java.util.Set;
 public class Controller {
 
     public static void main(String[] args) {
-        TestClass.testItemBuild();
+        //TestClass.testItemBuild();
+        new Controller().parseItemsFromFile();
     }
     
     public void parseItemsFromFile(){

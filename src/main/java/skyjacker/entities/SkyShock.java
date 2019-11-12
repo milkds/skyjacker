@@ -29,7 +29,7 @@ public class SkyShock {
 
     @ManyToMany(cascade = { CascadeType.ALL })
     @JoinTable(
-            name = "items_specs",
+            name = "shocks_categories",
             joinColumns = { @JoinColumn(name = "SHOCK_ID") },
             inverseJoinColumns = { @JoinColumn(name = "CATEGORY_ID") }
     )
