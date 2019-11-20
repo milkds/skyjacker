@@ -39,6 +39,8 @@ public class ShockBuilder {
         Set<SpecAndKitNote> notes = getSpecAndKitNotes(driver);
         Set<Fitment> fitments = getFitments(driver);
 
+        fitments.forEach(fitment -> fitment.setSkyShock(shock));
+
         shock.setTitle(title);
         shock.setSku(sku);
         shock.setDesc(desc);
