@@ -1,6 +1,7 @@
 package skyjacker;
 
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import skyjacker.entities.Fitment;
 import skyjacker.entities.FitmentNote;
 import skyjacker.entities.SkyShock;
@@ -36,10 +37,27 @@ public class FitmentDAO {
              checkedNotes.add(Objects.requireNonNullElse(checkedNote, note));
           });
           fitment.setFitNotes(checkedNotes);
+          saveFitment(session, fitment);
      });
  }
 
- private static FitmentNote checkNoteExistence(Session session, FitmentNote note) {
+    private static void saveFitment(Session session, Fitment fitment) {
+        Transaction transaction = null;
+        try {
+            transaction = session.getTransaction();
+            transaction.begin();
+            session.save(fitment);
+            transaction.commit();
+            session.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (transaction != null) {
+                transaction.rollback();
+            }
+        }
+    }
+
+    private static FitmentNote checkNoteExistence(Session session, FitmentNote note) {
      CriteriaBuilder builder = session.getCriteriaBuilder();
      CriteriaQuery<FitmentNote> crQ = builder.createQuery(FitmentNote.class);
      Root<FitmentNote> root = crQ.from(FitmentNote.class);

@@ -9,12 +9,9 @@ public class Controller {
 
     public static void main(String[] args) {
       //  TestClass.getFitAtts();
-     //   new Controller().parseItemsFromFile();
+        new Controller().parseItemsFromFile();
         //CarBuildTester.printCarMakes();
       //  CarBuildTester.printCarModels();
-
-        String s = "30.46";
-        System.out.println(Double.parseDouble(s));
     }
     
     public void parseItemsFromFile(){
