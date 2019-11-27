@@ -29,15 +29,30 @@ public class FitmentDAO {
 
  public static void prepareFitments(SkyShock shock, Session session) {
      Set<Fitment> fitments = shock.getFitments();
+     Set<FitmentNote> newFitNotes = new HashSet<>();
      fitments.forEach(fitment -> {
           Set<FitmentNote> fitNotes = fitment.getFitNotes();
           Set<FitmentNote> checkedNotes = new HashSet<>();
           fitNotes.forEach(note -> {
              FitmentNote checkedNote = checkNoteExistence(session, note);
-             checkedNotes.add(Objects.requireNonNullElse(checkedNote, note));
+             if (checkedNote==null){
+                 if (!newFitNotes.contains(note)){
+                     newFitNotes.add(note);
+                     checkedNote = note;
+                 }
+                 else {
+                     for (FitmentNote n : newFitNotes) {
+                         if (n.getFitNote().equals(note.getFitNote())) {
+                             checkedNote = n;
+                             break;
+                         }
+                     }
+                 }
+             }
+             checkedNotes.add(checkedNote);
           });
           fitment.setFitNotes(checkedNotes);
-          saveFitment(session, fitment);
+         // saveFitment(session, fitment);
      });
  }
 
@@ -48,7 +63,6 @@ public class FitmentDAO {
             transaction.begin();
             session.save(fitment);
             transaction.commit();
-            session.close();
         } catch (Exception e) {
             e.printStackTrace();
             if (transaction != null) {
