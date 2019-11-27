@@ -2,6 +2,7 @@ package skyjacker.entities;
 
 import javax.persistence.*;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -44,5 +45,18 @@ public class FitmentNote {
                 "fitNote='" + fitNote + '\'' +
                 ", fitments=" + fitments +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof FitmentNote)) return false;
+        FitmentNote that = (FitmentNote) o;
+        return getFitNote().equals(that.getFitNote());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getFitNote());
     }
 }

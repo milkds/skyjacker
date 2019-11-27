@@ -3,6 +3,7 @@ package skyjacker;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import skyjacker.entities.Category;
+import skyjacker.entities.Fitment;
 import skyjacker.entities.SkyShock;
 import skyjacker.entities.SpecAndKitNote;
 
@@ -50,6 +51,7 @@ public class ShockDAO {
     private static void prepareShockToSave(SkyShock shock, Session session) {
         checkCategories(shock, session);
         checkSKnotes(shock, session);
+        FitmentDAO.prepareFitments(shock, session);
     }
 
     private static void checkSKnotes(SkyShock shock, Session session) {

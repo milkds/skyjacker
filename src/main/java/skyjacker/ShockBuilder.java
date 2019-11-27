@@ -39,7 +39,10 @@ public class ShockBuilder {
         Set<SpecAndKitNote> notes = getSpecAndKitNotes(driver);
         Set<Fitment> fitments = getFitments(driver);
 
-        fitments.forEach(fitment -> fitment.setSkyShock(shock));
+        fitments.forEach(fitment -> {
+            processFitNotes(shock, fitment);
+            fitment.setSkyShock(shock);
+        });
 
         shock.setTitle(title);
         shock.setSku(sku);
@@ -48,6 +51,91 @@ public class ShockBuilder {
         shock.setCategories(categories);
         shock.setFitments(fitments);
         shock.setNotes(notes);
+    }
+
+    private void processFitNotes(SkyShock shock, Fitment fitment) {
+        Set<FitmentNote> rawFitNotes = fitment.getFitNotes();
+        Set<FitmentNote> finalFitNotes = new HashSet<>();
+        Set<SpecAndKitNote> shockNotes = shock.getNotes();
+        Set<String> fitNoteExceptions = getFitNoteExceptions();
+        rawFitNotes.forEach(fitNote->{
+            String note = fitNote.getFitNote();
+            if (note.contains("Extended")||note.contains("Collapsed")){
+                SpecAndKitNote lengthNote = getLengthNote(note);
+                if (lengthNote!=null){
+                    shockNotes.add(lengthNote);
+                }
+            }
+            else if (note.startsWith("Front")||note.startsWith("Rear")){
+                if (!note.endsWith("Lift")){
+                    note = normalizeLiftNote(note);
+                }
+                if (note.length()>10){
+                    fitNote.setFitNote(note);
+                    finalFitNotes.add(fitNote);
+                }
+            }
+            else if(fitNoteExceptions.contains(fitNote.getFitNote())){
+                finalFitNotes.add(fitNote);
+            }
+            else if (note.length()>5){
+                SpecAndKitNote shNote = new SpecAndKitNote();
+                shNote.setName("Note");
+                shNote.setValue(note);
+                shockNotes.add(shNote);
+            }
+        });
+        fitment.setFitNotes(finalFitNotes);
+    }
+
+    private Set<String> getFitNoteExceptions() {
+        Set<String> result = new HashSet<>();
+        result.add("0-1 in. Lift");
+        result.add("0-2 in. Lift");
+        result.add("1-2.5 in. Lift");
+        result.add("1-2.5 inches of lift");
+        result.add("2WD");
+        result.add("4WD");
+        result.add("RWD");
+
+        return result;
+    }
+
+    private String normalizeLiftNote(String note) {
+        //todo: implement
+        return note;
+    }
+
+    private SpecAndKitNote getLengthNote(String note) {
+        String lengthType = "";
+        if (note.contains("Collapsed")){
+            lengthType = "Collapsed Length";
+            note = note.replace("Collapsed", "");
+        }
+        else {
+            lengthType = "Extended Length";
+            note = note.replace("Extended", "");
+        }
+        note = note.trim();
+        if (note.length()==0){
+            return null;
+        }
+        if (note.contains("in.")){
+            note = note.replace("in.", "");
+            note = note.trim();
+        }
+        //checking if length has legal value
+        try {
+            Double d = Double.parseDouble(note);
+        }
+        catch (NumberFormatException e){
+            return null;
+        }
+        SpecAndKitNote skNote = new SpecAndKitNote();
+        skNote.setName(lengthType);
+        skNote.setValue(note);
+
+        return skNote;
     }
 
     private Set<Fitment> getFitments(WebDriver driver) {
