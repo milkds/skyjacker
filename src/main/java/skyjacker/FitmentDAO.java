@@ -1,5 +1,8 @@
 package skyjacker;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.hibernate.NonUniqueResultException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import skyjacker.entities.Fitment;
@@ -15,6 +18,8 @@ import javax.persistence.criteria.Root;
 import java.util.*;
 
 public class FitmentDAO {
+
+    private static final Logger logger = LogManager.getLogger(FitmentDAO.class.getName());
     public static Set<String> getAllFitLines(Session session) {
      List<String> resultList = new ArrayList<>();
      CriteriaBuilder builder = session.getCriteriaBuilder();
@@ -34,7 +39,8 @@ public class FitmentDAO {
           Set<FitmentNote> fitNotes = fitment.getFitNotes();
           Set<FitmentNote> checkedNotes = new HashSet<>();
           fitNotes.forEach(note -> {
-             FitmentNote checkedNote = checkNoteExistence(session, note);
+             FitmentNote checkedNote = null;
+              checkedNote = checkNoteExistence(session, note);
              if (checkedNote==null){
                  if (!newFitNotes.contains(note)){
                      newFitNotes.add(note);
@@ -78,10 +84,10 @@ public class FitmentDAO {
      crQ.where(builder.equal(root.get("fitNote"), note.getFitNote()));
      Query q = session.createQuery(crQ);
      FitmentNote testNote = null;
-     try {
-      testNote = (FitmentNote) q.getSingleResult();
-     } catch (NoResultException ignored) {}
-
+     List<FitmentNote> notes = q.getResultList();
+     if (notes.size()>0){
+         testNote = notes.get(0);
+     }
      return testNote;
  }
 }

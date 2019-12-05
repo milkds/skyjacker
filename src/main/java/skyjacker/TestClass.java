@@ -39,4 +39,28 @@ public class TestClass {
         });
         HibernateUtil.shutdown();
     }
+
+    public static void getFitNotesDuplicates(){
+        Session session = HibernateUtil.getSession();
+        List<FitmentNote> resultList = new ArrayList<>();
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<FitmentNote> crQ = builder.createQuery(FitmentNote.class);
+        Root<FitmentNote> root = crQ.from(FitmentNote.class);
+        Query q = session.createQuery(crQ);
+        resultList = q.getResultList();
+        Set<String> checkedNotes = new HashSet<>();
+        System.out.println(resultList.size());
+        resultList.forEach(note->{
+         if (checkedNotes.contains(note.getFitNote())){
+             System.out.println(note);
+         }
+         else {
+             checkedNotes.add(note.getFitNote());
+         }
+        });
+
+
+        HibernateUtil.shutdown();
+
+    }
 }

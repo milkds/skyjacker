@@ -28,6 +28,14 @@ public class Fitment {
     @JoinColumn(name = "SHOCK_ID")
     private SkyShock shock;
 
+    @Override
+    public String toString() {
+        return "Fitment{" +
+                "fitString='" + fitString + '\'' +
+                ", fitNotes=" + fitNotes +
+                '}';
+    }
+
     public String getFitString() {
         return fitString;
     }

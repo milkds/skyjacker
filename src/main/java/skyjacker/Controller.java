@@ -8,10 +8,12 @@ import java.util.Set;
 public class Controller {
 
     public static void main(String[] args) {
-      //  TestClass.getFitAtts();
+      //  TestClass.getFitNotesDuplicates();
         new Controller().parseItemsFromFile();
         //CarBuildTester.printCarMakes();
       //  CarBuildTester.printCarModels();
+
+
     }
     
     public void parseItemsFromFile(){

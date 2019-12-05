@@ -43,7 +43,7 @@ public class SkyShock {
     )
     private Set<SpecAndKitNote> notes = new HashSet<>();
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "shock")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "shock", cascade = CascadeType.ALL)
     private Set<Fitment> fitments = new HashSet<>();
 
     @Override

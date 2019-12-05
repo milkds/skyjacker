@@ -42,8 +42,8 @@ public class FitmentNote {
     @Override
     public String toString() {
         return "FitmentNote{" +
-                "fitNote='" + fitNote + '\'' +
-                ", fitments=" + fitments +
+                "fitNoteID=" + fitNoteID +
+                ", fitNote='" + fitNote + '\'' +
                 '}';
     }
 

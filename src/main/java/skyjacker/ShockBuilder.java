@@ -165,6 +165,7 @@ public class ShockBuilder {
             Set<FitmentNote> fitNotes = fitment.getFitNotes();
             List<WebElement> notesEls = fitEl.findElements(By.tagName("li"));
             logger.debug("FITMENT NOTES: ");
+            Set<String> duplicateRemoveSet = new HashSet<>();
             notesEls.forEach(notesEl->{
                 String fitNote = notesEl.getText();
                 FitmentNote note = new FitmentNote();
