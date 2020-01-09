@@ -2,10 +2,7 @@ package skyjacker;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import skyjacker.entities.Category;
-import skyjacker.entities.Fitment;
-import skyjacker.entities.SkyShock;
-import skyjacker.entities.SpecAndKitNote;
+import skyjacker.entities.*;
 
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
@@ -103,5 +100,24 @@ public class ShockDAO {
         } catch (NoResultException ignored) {
         }
         return testCat;
+    }
+
+    public static void saveEntities(Set<CarMergeEntity> entities) {
+        Session session = HibernateUtil.getSession();
+        Transaction transaction = null;
+        try {
+            transaction = session.getTransaction();
+            transaction.begin();
+            entities.forEach(session::persist);
+            transaction.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (transaction != null) {
+                transaction.rollback();
+            }
+        }
+
+        session.close();
+        HibernateUtil.shutdown();
     }
 }

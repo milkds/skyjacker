@@ -44,6 +44,7 @@ public class HibernateUtil {
                 sources.addAnnotatedClass(FitmentNote.class);
                 sources.addAnnotatedClass(Category.class);
                 sources.addAnnotatedClass(SpecAndKitNote.class);
+                sources.addAnnotatedClass(CarMergeEntity.class);
                 Metadata metadata = sources.getMetadataBuilder().build();
 
                 sessionFactory = metadata.getSessionFactoryBuilder().build();
